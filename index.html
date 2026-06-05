@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book Recommendation System</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+
+<body>
+  <div class="app-wrapper">
+
+    <div class="card" id="welcomeScreen">
+      <i class="fas fa-book-open fa-3x welcome-icon"></i>
+      <h1>Welcome to the Book Recommendation System!</h1>
+      <p class="tagline">Are you ready to discover new adventures?</p>
+
+      <div class="input-group">
+        <i class="fas fa-user input-icon"></i>
+        <input type="text" id="userName" placeholder="Enter your name..." aria-label="Enter your name">
+      </div>
+
+      <div class="genre-section-title">Select Book Genres</div>
+      <div class="genre-list">
+        <label class="genre-item"><input type="checkbox" class="genre-cb" value="science fiction"> Science
+          Fiction</label>
+        <label class="genre-item"><input type="checkbox" class="genre-cb" value="fantasy"> Fantasy</label>
+        <label class="genre-item"><input type="checkbox" class="genre-cb" value="history"> History</label>
+        <label class="genre-item"><input type="checkbox" class="genre-cb" value="psychology"> Psychology</label>
+        <label class="genre-item"><input type="checkbox" class="genre-cb" value="poetry"> Poetry</label>
+        <label class="genre-item"><input type="checkbox" class="genre-cb" value="fiction"> Fiction</label>
+        <label class="genre-item"><input type="checkbox" class="genre-cb" value="romance"> Romance</label>
+        <label class="genre-item"><input type="checkbox" class="genre-cb" value="cooking"> Cooking</label>
+        <label class="genre-item"><input type="checkbox" class="genre-cb" value="health"> Health</label>
+        <label class="genre-item"><input type="checkbox" class="genre-cb" value="technology"> Technology</label>
+        <label class="genre-item"><input type="checkbox" class="genre-cb" value="adventure"> Adventure</label>
+        <label class="genre-item"><input type="checkbox" class="genre-cb" value="crime"> Crime</label>
+      </div>
+
+      <button onclick="startApp()">Discover Books <i class="fas fa-arrow-right"></i></button>
+    </div>
+
+    <div class="hidden" id="mainApp">
+      <nav class="navbar">
+        <div class="nav-left" id="navName"></div>
+        <div class="nav-center">Welcome to Your Personal Library </div>
+        <div class="nav-right" id="navGenres"></div>
+      </nav>
+
+      <div id="loadingSpinner" class="hidden">
+        <div class="spinner"></div>
+      </div>
+      <div id="notification" class="notification-box hidden"></div>
+      <div id="bookRecommendations" class="book-grid"></div>
+    </div>
+
+  </div>
+  <div id="bookModal" class="modal hidden">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeModal()">&times;</span>
+      <div class="modal-body">
+        <img id="modalImg" src="" alt="Book Cover">
+        <div class="modal-info">
+          <h2 id="modalTitle"></h2>
+          <p class="modal-author" id="modalAuthor"></p>
+          <p class="modal-date" id="modalDate"></p>
+          <div class="modal-desc" id="modalDesc"></div>
+          <a id="modalLink" href="#" target="_blank" class="modal-action-btn">Read Preview</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="script.js"></script>
+</body>
+
+</html>
