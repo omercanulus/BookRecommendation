@@ -1,6 +1,4 @@
-const API_KEY = (typeof process !== 'undefined' && process.env.API_KEY)
-  ? process.env.API_KEY
-  : (typeof CONFIG !== 'undefined' ? CONFIG.API_KEY : '');
+const API_KEY = 'AIzaSyD5ZyZ1EdNcs9hAqROdm1PxUxySm6R67ZQ';
 let currentBooks = [];
 let notificationTimeout;
 
