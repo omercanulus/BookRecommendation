@@ -68,8 +68,6 @@ function showNotification(message, type) {
 async function fetchBooks(genres) {
   const bookDiv = document.getElementById("bookRecommendations");
   const loadingSpinner = document.getElementById("loadingSpinner");
-  const API_KEY = (typeof process !== 'undefined' && process.env.API_KEY) ? process.env.API_KEY : (typeof CONFIG !== 'undefined' ? CONFIG.API_KEY : '');
-
   bookDiv.innerHTML = "";
   if (loadingSpinner) loadingSpinner.classList.remove("hidden");
 
