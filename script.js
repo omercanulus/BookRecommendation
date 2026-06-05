@@ -1,35 +1,65 @@
 let currentBooks = [];
+let notificationTimeout;
 
-function startApp() {
-  const name = document.getElementById("userName").value.trim();
-  if (name === "") {
-    showNotification("Please enter your name :)", "error");
-    return;
+function startApp(event) {
+  if (event) {
+    event.preventDefault();
   }
+
+  const nameElement = document.getElementById("userName");
+  const name = nameElement ? nameElement.value.trim() : "Guest";
+
+  const finalName = name === "" ? "Guest" : name;
 
   const checkboxes = document.querySelectorAll(".genre-cb:checked");
+  let selectedGenres = [];
+  let navGenreText = "";
+
   if (checkboxes.length === 0) {
-    showNotification("Please select at least one genre!", "error");
-    return;
+    selectedGenres = ["fiction"];
+    navGenreText = "Mixed Books";
+  } else {
+    selectedGenres = Array.from(checkboxes).map(cb => cb.value);
+    navGenreText = selectedGenres.join(", ");
   }
 
-  const selectedGenres = Array.from(checkboxes).map(cb => cb.value);
+  const navNameEl = document.getElementById("navName");
+  const navGenresEl = document.getElementById("navGenres");
 
-  document.getElementById("navName").innerHTML = `<i class="fas fa-user"></i> ${name}`;
-  document.getElementById("navGenres").innerHTML = `<i class="fas fa-bookmark"></i> ${selectedGenres.join(", ")}`;
+  if (navNameEl) navNameEl.innerHTML = `<i class="fas fa-user"></i> ${finalName}`;
+  if (navGenresEl) navGenresEl.innerHTML = `<i class="fas fa-bookmark"></i> ${navGenreText}`;
 
-  document.getElementById("welcomeScreen").classList.add("hidden");
-  document.getElementById("mainApp").classList.remove("hidden");
+  const welcomeScreen = document.getElementById("welcomeScreen");
+  const mainApp = document.getElementById("mainApp");
+
+  if (welcomeScreen) welcomeScreen.classList.add("hidden");
+  if (mainApp) mainApp.classList.remove("hidden");
 
   fetchBooks(selectedGenres);
 }
 
 function showNotification(message, type) {
   const notificationBox = document.getElementById("notification");
+
+  if (!notificationBox) {
+    if (message) alert(message);
+    return;
+  }
+
+  if (!message) {
+    notificationBox.classList.add("hidden");
+    return;
+  }
+
   notificationBox.textContent = message;
   notificationBox.className = `notification-box ${type}`;
   notificationBox.classList.remove("hidden");
-  setTimeout(() => {
+
+  if (notificationTimeout) {
+    clearTimeout(notificationTimeout);
+  }
+
+  notificationTimeout = setTimeout(() => {
     notificationBox.classList.add("hidden");
   }, 4000);
 }
@@ -37,32 +67,42 @@ function showNotification(message, type) {
 function fetchBooks(genres) {
   const bookDiv = document.getElementById("bookRecommendations");
   const loadingSpinner = document.getElementById("loadingSpinner");
-  const API_KEY = CONFIG.API_KEY;
+
+  const API_KEY = typeof process !== 'undefined' ? process.env.API_KEY : CONFIG.API_KEY
 
   bookDiv.innerHTML = "";
-  loadingSpinner.classList.remove("hidden");
+  if (loadingSpinner) loadingSpinner.classList.remove("hidden");
+
   showNotification("", "");
 
-  const query = genres.map(g => `subject:${g}`).join("+OR+");
+  const fetchPromises = genres.map(g =>
+    fetch(`https://www.googleapis.com/books/v1/volumes?q=subject:"${g}"&maxResults=15&key=${API_KEY}`)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+  );
 
-  fetch(`https://www.googleapis.com/books/v1/volumes?q=${query}&maxResults=40&key=${API_KEY}`)
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return response.json();
-    })
-    .then(data => {
-      loadingSpinner.classList.add("hidden");
+  Promise.all(fetchPromises)
+    .then(results => {
+      if (loadingSpinner) loadingSpinner.classList.add("hidden");
 
-      if (!data.items || data.items.length === 0) {
-        bookDiv.innerHTML = "<p class='no-books-message'>No books found in the selected genres.</p>";
+      currentBooks = [];
+
+      results.forEach(data => {
+        if (data.items) {
+          currentBooks.push(...data.items);
+        }
+      });
+
+      if (currentBooks.length === 0) {
+        bookDiv.innerHTML = "<p class='no-books-message'>No books found in the selected genres. Please try another one.</p>";
         return;
       }
 
-      currentBooks = data.items;
-
-      data.items.forEach((book, index) => {
+      currentBooks.forEach((book, index) => {
         const volumeInfo = book.volumeInfo;
         const title = volumeInfo.title || "Title Not Available";
         const author = volumeInfo.authors ? volumeInfo.authors.join(", ") : "Unknown Author";
@@ -84,7 +124,7 @@ function fetchBooks(genres) {
       });
     })
     .catch(error => {
-      loadingSpinner.classList.add("hidden");
+      if (loadingSpinner) loadingSpinner.classList.add("hidden");
       console.error("API Error:", error);
       showNotification("An error occurred while fetching books.", "error");
       bookDiv.innerHTML = "<p class='error-message'>An error occurred while retrieving data.</p>";
@@ -125,9 +165,14 @@ window.onclick = function (event) {
   }
 }
 
-document.getElementById("userName").addEventListener("keypress", function (event) {
-  if (event.key === "Enter") {
-    event.preventDefault();
-    startApp();
+document.addEventListener("DOMContentLoaded", () => {
+  const userNameInput = document.getElementById("userName");
+  if (userNameInput) {
+    userNameInput.addEventListener("keypress", function (event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        startApp(event);
+      }
+    });
   }
 });
