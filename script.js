@@ -128,8 +128,8 @@ function fetchBooks(genres) {
     .catch(error => {
       if (loadingSpinner) loadingSpinner.classList.add("hidden");
       console.error("API Error:", error);
-      showNotification("An error occurred while fetching books.", "error");
-      bookDiv.innerHTML = "<p class='error-message'>An error occurred while retrieving data.</p>";
+      showNotification("Error: " + error.message, "error");
+      bookDiv.innerHTML = `<p class='error-message'>API Error: ${error.message}</p>`;
     });
 }
 
