@@ -67,70 +67,59 @@ function showNotification(message, type) {
   }, 4000);
 }
 
-function fetchBooks(genres) {
+async function fetchBooks(genres) {
   const bookDiv = document.getElementById("bookRecommendations");
   const loadingSpinner = document.getElementById("loadingSpinner");
-
+  const API_KEY = (typeof process !== 'undefined' && process.env.API_KEY) ? process.env.API_KEY : (typeof CONFIG !== 'undefined' ? CONFIG.API_KEY : '');
 
   bookDiv.innerHTML = "";
   if (loadingSpinner) loadingSpinner.classList.remove("hidden");
 
-  showNotification("", "");
+  currentBooks = [];
 
-  const fetchPromises = genres.map(g =>
-    fetch(`https://www.googleapis.com/books/v1/volumes?q=subject:"${g}"&maxResults=15&key=${API_KEY}`)
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+  for (const g of genres) {
+    try {
+      const response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=subject:"${g}"&maxResults=15&key=${API_KEY}`);
+      if (!response.ok) {
+        if (response.status === 429) {
+          throw new Error("Too many requests! Please wait a moment.");
         }
-        return response.json();
-      })
-  );
-
-  Promise.all(fetchPromises)
-    .then(results => {
-      if (loadingSpinner) loadingSpinner.classList.add("hidden");
-
-      currentBooks = [];
-
-      results.forEach(data => {
-        if (data.items) {
-          currentBooks.push(...data.items);
-        }
-      });
-
-      if (currentBooks.length === 0) {
-        bookDiv.innerHTML = "<p class='no-books-message'>No books found in the selected genres. Please try another one.</p>";
-        return;
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-
-      currentBooks.forEach((book, index) => {
-        const volumeInfo = book.volumeInfo;
-        const title = volumeInfo.title || "Title Not Available";
-        const author = volumeInfo.authors ? volumeInfo.authors.join(", ") : "Unknown Author";
-        let shortDesc = volumeInfo.description || "No description available.";
-        if (shortDesc.length > 90) {
-          shortDesc = shortDesc.substring(0, 90) + "...";
-        }
-        const imageUrl = volumeInfo.imageLinks?.thumbnail || 'https://via.placeholder.com/128x192.png?text=Book';
-
-        bookDiv.innerHTML += `
-          <div class="book-card">
-            <img src="${imageUrl}" alt="${title} Cover" class="book-cover">
-            <h3>${title}</h3>
-            <p><strong>Author:</strong> ${author}</p>
-            <p>${shortDesc}</p>
-            <button class="details-btn" onclick="openModal(${index})">Show Details</button>
-          </div>
-        `;
-      });
-    })
-    .catch(error => {
-      if (loadingSpinner) loadingSpinner.classList.add("hidden");
+      const data = await response.json();
+      if (data.items) {
+        currentBooks.push(...data.items);
+      }
+    } catch (error) {
       console.error("API Error:", error);
-      showNotification("Error: " + error.message, "error");
-      bookDiv.innerHTML = `<p class='error-message'>API Error: ${error.message}</p>`;
-    });
+    }
+  }
+
+  loadingSpinner.classList.add("hidden");
+
+  if (currentBooks.length === 0) {
+    bookDiv.innerHTML = "<p class='no-books-message'>No books found. Please try again later.</p>";
+    return;
+  }
+
+  currentBooks.forEach((book, index) => {
+    const volumeInfo = book.volumeInfo;
+    const title = volumeInfo.title || "Title Not Available";
+    const author = volumeInfo.authors ? volumeInfo.authors.join(", ") : "Unknown Author";
+    let shortDesc = volumeInfo.description || "No description available.";
+    if (shortDesc.length > 90) shortDesc = shortDesc.substring(0, 90) + "...";
+    const imageUrl = volumeInfo.imageLinks?.thumbnail || 'https://via.placeholder.com/128x192.png?text=Book';
+
+    bookDiv.innerHTML += `
+      <div class="book-card">
+        <img src="${imageUrl}" alt="${title} Cover" class="book-cover">
+        <h3>${title}</h3>
+        <p><strong>Author:</strong> ${author}</p>
+        <p>${shortDesc}</p>
+        <button class="details-btn" onclick="openModal(${index})">Show Details</button>
+      </div>
+    `;
+  });
 }
 
 function openModal(index) {
