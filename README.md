@@ -14,6 +14,12 @@ A dynamic web application that suggests books based on user-selected genres. Thi
 * JavaScript 
 * Google Books API
 
+## Project Resources
+You can access the live demonstration, source code, and project presentation through the links below:
+
+* **Live Demo:** [Book Recommendation System](https://book-recommendation-olive.vercel.app/)
+* **Source Code:** [GitHub Repository](https://github.com/omercanulus/BookRecommendation)
+* **Presentation Video:** [Project Overview & Demo](https://drive.google.com/file/d/1K2HY_jNGqejEF1mEQIuEPUV-Y1_RAyqp/view?usp=share_link)
 
 ## Authors
 **Ömer Can Ulus 250229106** & **Elif Şentürk 240229054**
